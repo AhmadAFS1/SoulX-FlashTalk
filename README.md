@@ -166,11 +166,16 @@ Due to Group 1 reaching its capacity, we have opened a new WeChat group. Additio
 If you find our work useful in your research, please consider citing:
 
 ```
-@inproceedings{Shen2025SoulXFlashTalkRI,
-title={SoulX-FlashTalk: Real-Time Infinite Streaming of Audio-Driven Avatars via Self-Correcting Bidirectional Distillation},
-author={Le Shen and Qian Qiao and Tan Yu and Ke Zhou and Tianhang Yu and Yu Zhan and Zhenjie Wang and Ming Tao and Shunshun Yin and Siyuan Liu},
-year={2025},
-url={https://api.semanticscholar.org/CorpusID:284311003} }
+@misc{shen2025soulxflashtalk,
+  title = {{SoulX-FlashTalk}: Real-Time Infinite Streaming of Audio-Driven Avatars via Self-Correcting Bidirectional Distillation},
+  author = {Shen, Le and Qiao, Qian and Yu, Tan and Zhou, Ke and Yu, Tianhang and Zhan, Yu and Wang, Zhenjie and Tao, Ming and Yin, Shunshun and Liu, Siyuan},
+  year = {2025},
+  eprint = {2512.23379},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CV},
+  doi = {10.48550/arXiv.2512.23379},
+  url = {https://arxiv.org/abs/2512.23379}
+}
 ```
 
 ## 🙇 Acknowledgement
