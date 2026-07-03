@@ -1,6 +1,7 @@
 # Copyright 2024-2025 The Alibaba Wan Team Authors. All rights reserved.
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from einops import rearrange
 from xfuser.core.distributed import (
     get_sequence_parallel_rank,
@@ -9,6 +10,13 @@ from xfuser.core.distributed import (
 import xformers.ops
 
 from ..utils.multitalk_utils import RotaryPositionalEmbedding1D, normalize_and_scale, split_token_counts_and_frame_ids
+
+def _attention(q, k, v, attn_bias=None):
+    if attn_bias is None and torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 12:
+        x = F.scaled_dot_product_attention(
+            q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2), attn_mask=None)
+        return x.transpose(1, 2).contiguous()
+    return xformers.ops.memory_efficient_attention(q, k, v, attn_bias=attn_bias, op=None)
 
 class SingleStreamAttention(nn.Module):
     def __init__(
@@ -86,7 +94,7 @@ class SingleStreamAttention(nn.Module):
         else:
             attn_bias = None
 
-        x = xformers.ops.memory_efficient_attention(q, encoder_k, encoder_v, attn_bias=attn_bias, op=None,)
+        x = _attention(q, encoder_k, encoder_v, attn_bias=attn_bias)
         x = rearrange(x, "B M H K -> B H M K") 
 
         # linear transform
@@ -200,7 +208,7 @@ class SingleStreamMutiAttention(SingleStreamAttention):
         q = rearrange(q, "B H M K -> B M H K")
         encoder_k = rearrange(encoder_k, "B H M K -> B M H K")
         encoder_v = rearrange(encoder_v, "B H M K -> B M H K")
-        x = xformers.ops.memory_efficient_attention(q, encoder_k, encoder_v, attn_bias=None, op=None,)
+        x = _attention(q, encoder_k, encoder_v, attn_bias=None)
         x = rearrange(x, "B M H K -> B H M K")
 
         # linear transform

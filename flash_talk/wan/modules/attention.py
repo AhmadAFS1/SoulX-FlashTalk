@@ -19,6 +19,41 @@ __all__ = [
     'attention',
 ]
 
+def _prefer_torch_sdpa():
+    return torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 12
+
+
+def _sdpa_attention(q, k, v, q_lens=None, k_lens=None, dropout_p=0., causal=False, dtype=torch.bfloat16):
+    half_dtypes = (torch.float16, torch.bfloat16)
+    out_dtype = q.dtype
+
+    def half(x):
+        return x if x.dtype in half_dtypes else x.to(dtype)
+
+    if q_lens is None:
+        q_lens = [q.size(1)] * q.size(0)
+    else:
+        q_lens = q_lens.tolist()
+
+    if k_lens is None:
+        k_lens = [k.size(1)] * k.size(0)
+    else:
+        k_lens = k_lens.tolist()
+
+    outs = []
+    for q_i, k_i, v_i, q_len, k_len in zip(q, k, v, q_lens, k_lens):
+        q_cur = half(q_i[:q_len]).transpose(0, 1).unsqueeze(0)
+        k_cur = half(k_i[:k_len]).transpose(0, 1).unsqueeze(0)
+        v_cur = half(v_i[:k_len]).transpose(0, 1).unsqueeze(0)
+        out = torch.nn.functional.scaled_dot_product_attention(
+            q_cur, k_cur, v_cur, attn_mask=None, is_causal=causal, dropout_p=dropout_p)
+        out = out.squeeze(0).transpose(0, 1)
+        if q_len < q.size(1):
+            out = torch.cat([out, out.new_zeros(q.size(1) - q_len, *out.shape[1:])])
+        outs.append(out)
+
+    return torch.stack(outs).type(out_dtype)
+
 def flash_attention(
     q,
     k,
@@ -50,6 +85,9 @@ def flash_attention(
     half_dtypes = (torch.float16, torch.bfloat16)
     assert dtype in half_dtypes
     assert q.device.type == 'cuda' and q.size(-1) <= 256
+
+    if _prefer_torch_sdpa():
+        return _sdpa_attention(q, k, v, q_lens, k_lens, dropout_p, causal, dtype)
 
     # params
     b, lq, lk, out_dtype = q.size(0), q.size(1), k.size(1), q.dtype
