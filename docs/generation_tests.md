@@ -70,6 +70,74 @@ All videos were generated with:
 
 Each 10-second video generated 9 chunks. Most chunks took about 36-38 seconds.
 
+These selfie test MP4s were also mirrored into a Git-visible folder:
+
+```text
+github_outputs/selfie_tests/res_selfie_10s.mp4
+github_outputs/selfie_tests/res_selfie_04_10s.mp4
+github_outputs/selfie_tests/res_selfie_08_10s.mp4
+github_outputs/selfie_tests/res_smoke.mp4
+```
+
+## Voice Sample Tests
+
+Two additional tests were run with the provided LumaTalk voice samples. These outputs were saved under `github_outputs/` because `assets/` and `sample_results/` are ignored by Git in this repo.
+
+Input voice files:
+
+| Voice | Source Audio | Duration | Format |
+| --- | --- | ---: | --- |
+| Female | `assets/lumatalk_welcome_female.wav` | 11.13 sec | WAV, 24 kHz, mono |
+| Male | `assets/lumatalk_welcome_male.wav` | 11.12 sec | WAV, 24 kHz, mono |
+
+Generated outputs:
+
+| Output | Conditioning Image | CPU Offload | Duration | Size | Approx Runtime |
+| --- | --- | --- | ---: | ---: | ---: |
+| `github_outputs/voice_tests/res_female_cpu_offload.mp4` | `assets/varied_background_selfie_images/01_arab_woman_city_balcony.png` | Yes | 11.13 sec | 967K | 6 min 37 sec |
+| `github_outputs/voice_tests/res_male_cpu_offload.mp4` | `assets/varied_background_selfie_images/08_south_korean_man_modern_workspace.png` | Yes | 11.12 sec | 904K | 6 min 42 sec |
+
+Validation:
+
+```text
+github_outputs/voice_tests/res_female_cpu_offload.mp4
+h264 video 448x768
+aac audio 24000 Hz mono
+duration 11.130000
+
+github_outputs/voice_tests/res_male_cpu_offload.mp4
+h264 video 448x768
+aac audio 24000 Hz mono
+duration 11.120000
+```
+
+### No CPU Offload Test
+
+A no-offload test was attempted with the female voice sample:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 .venv/bin/python generate_video.py \
+  --ckpt_dir models/SoulX-FlashTalk-14B \
+  --wav2vec_dir models/chinese-wav2vec2-base \
+  --input_prompt "A person is talking. Only the foreground character is moving, the background remains static." \
+  --cond_image assets/varied_background_selfie_images/01_arab_woman_city_balcony.png \
+  --audio_path assets/lumatalk_welcome_female.wav \
+  --audio_encode_mode stream \
+  --save_file github_outputs/voice_tests/res_female_no_cpu_offload.mp4
+```
+
+Result: failed during model loading with CUDA out-of-memory before generation started.
+
+Relevant error:
+
+```text
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 136.00 MiB.
+GPU 0 has a total capacity of 47.27 GiB of which 103.81 MiB is free.
+Including non-PyTorch memory, this process has 47.16 GiB memory in use.
+```
+
+Conclusion: this 48 GB GPU still requires `--cpu_offload` for this model.
+
 ## Command Template
 
 ```bash
