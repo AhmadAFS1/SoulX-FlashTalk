@@ -43,6 +43,7 @@ def get_base_data(pipeline, input_prompt, cond_image, base_seed):
         sampling_steps=infer_params['sample_steps'],
         seed=base_seed,
         shift=infer_params['sample_shift'],
+        audio_motion_scale=infer_params.get('audio_motion_scale', 1.0),
         color_correction_strength=infer_params['color_correction_strength'],
     )
 
@@ -67,4 +68,3 @@ def run_pipeline(pipeline, audio_embedding):
     sample = pipeline.generate(audio_embedding)
     sample_frames = (((sample+1)/2).permute(1,2,3,0).clip(0,1) * 255).contiguous()
     return sample_frames
-

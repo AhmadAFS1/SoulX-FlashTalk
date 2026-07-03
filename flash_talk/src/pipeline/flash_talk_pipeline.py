@@ -156,6 +156,7 @@ class FlashTalkPipeline:
                         sampling_steps,
                         seed=None,
                         shift=5.0,
+                        audio_motion_scale=1.0,
                         color_correction_strength=0.0,
                         ):
 
@@ -168,6 +169,9 @@ class FlashTalkPipeline:
 
         self.frame_num = frame_num
         self.motion_frames_num = motion_frames_num
+        self.audio_motion_scale = audio_motion_scale
+        for block in self.model.blocks:
+            block.audio_motion_scale = audio_motion_scale
 
         self.target_h, self.target_w = target_size
         self.lat_h, self.lat_w = self.target_h // self.vae_stride[1], self.target_w // self.vae_stride[2]

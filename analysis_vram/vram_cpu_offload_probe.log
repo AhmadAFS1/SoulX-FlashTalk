@@ -1,0 +1,121 @@
+/workspace/SoulX-FlashTalk/flash_talk/wan/modules/model.py:31: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @amp.autocast(enabled=False)
+/workspace/SoulX-FlashTalk/flash_talk/wan/modules/model.py:42: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @amp.autocast(enabled=False)
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:31: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @amp.autocast(enabled=False)
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:43: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @amp.autocast(enabled=False)
+2026-07-03 22:26:28.375 | INFO     | flash_talk.inference:get_pipeline:23 - ulysses_degree: 1, ring_degree: 1, device: cuda
+2026-07-03 22:26:41.646 | INFO     | flash_talk.src.pipeline.flash_talk_pipeline:__init__:104 - Creating WanModel from models/SoulX-FlashTalk-14B
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 62.26it/s]
+Loading weights:   0%|          | 0/211 [00:00<?, ?it/s]Loading weights: 100%|██████████| 211/211 [00:00<00:00, 54277.72it/s]
+[transformers] [1mWav2Vec2Model LOAD REPORT[0m from: models/chinese-wav2vec2-base
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+quantizer.weight_proj.weight | UNEXPECTED |  | 
+project_hid.bias             | UNEXPECTED |  | 
+quantizer.codevectors        | UNEXPECTED |  | 
+project_q.bias               | UNEXPECTED |  | 
+quantizer.weight_proj.bias   | UNEXPECTED |  | 
+project_q.weight             | UNEXPECTED |  | 
+project_hid.weight           | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+/workspace/SoulX-FlashTalk/flash_talk/wan/modules/clip.py:540: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(dtype=self.dtype):
+2026-07-03 22:26:50.299 | INFO     | __main__:generate:118 - Data preparation done. Start to generate video...
+[transformers] `use_return_dict` is deprecated! Use `return_dict` instead!
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:586: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:412: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:277: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:285: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:299: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:332: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+[generate] model denoise per step: 3.395836591720581s
+[generate] model denoise per step: 3.3643739223480225s
+[generate] model denoise per step: 3.3734853267669678s
+[generate] model denoise per step: 3.3830761909484863s
+[generate] decode video frames: 1.4206745624542236s
+[generate] color correction: 0.007714509963989258s
+[generate] encode motion frames: 0.1282358169555664s
+2026-07-03 22:27:28.571 | INFO     | __main__:generate:182 - Generate video chunk-0 done, cost time: 38.12s
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:586: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:412: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:277: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:285: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:299: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+/workspace/SoulX-FlashTalk/flash_talk/infinite_talk/modules/multitalk_model.py:332: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(dtype=torch.float32):
+[generate] model denoise per step: 3.377323865890503s
+[generate] model denoise per step: 3.3813958168029785s
+[generate] model denoise per step: 3.3949151039123535s
+[generate] model denoise per step: 3.4101977348327637s
+[generate] decode video frames: 1.3898279666900635s
+[generate] color correction: 0.007658720016479492s
+[generate] encode motion frames: 0.12886309623718262s
+2026-07-03 22:28:05.875 | INFO     | __main__:generate:182 - Generate video chunk-1 done, cost time: 37.23s
+ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
+  built with gcc 13 (Ubuntu 13.2.0-23ubuntu3)
+  configuration: --prefix=/usr --extra-version=3ubuntu5 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --disable-omx --enable-gnutls --enable-libaom --enable-libass --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libharfbuzz --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-openal --enable-opencl --enable-opengl --disable-sndio --enable-libvpl --disable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-ladspa --enable-libbluray --enable-libjack --enable-libpulse --enable-librabbitmq --enable-librist --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libx264 --enable-libzmq --enable-libzvbi --enable-lv2 --enable-sdl2 --enable-libplacebo --enable-librav1e --enable-pocketsphinx --enable-librsvg --enable-libjxl --enable-shared
+  libavutil      58. 29.100 / 58. 29.100
+  libavcodec     60. 31.102 / 60. 31.102
+  libavformat    60. 16.100 / 60. 16.100
+  libavdevice    60.  3.100 / 60.  3.100
+  libavfilter     9. 12.100 /  9. 12.100
+  libswscale      7.  5.100 /  7.  5.100
+  libswresample   4. 12.100 /  4. 12.100
+  libpostproc    57.  3.100 / 57.  3.100
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'analysis_vram/vram_cpu_offload_probe.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf61.1.100
+  Duration: 00:00:02.24, start: 0.000000, bitrate: 741 kb/s
+  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 448x768, 737 kb/s, 25 fps, 25 tbr, 12800 tbn (default)
+    Metadata:
+      handler_name    : VideoHandler
+      vendor_id       : [0][0][0][0]
+      encoder         : Lavc61.3.100 libx264
+[aist#1:0/pcm_s16le @ 0x59d1045f6180] Guessed Channel Layout: mono
+Input #1, wav, from 'sample_results/smoke_2s.wav':
+  Metadata:
+    encoder         : Lavf60.16.100
+  Duration: 00:00:02.00, bitrate: 256 kb/s
+  Stream #1:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 16000 Hz, 1 channels, s16, 256 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (copy)
+  Stream #1:0 -> #0:1 (pcm_s16le (native) -> aac (native))
+Press [q] to stop, [?] for help
+Output #0, mp4, to 'analysis_vram/res_vram_cpu_offload_probe.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf60.16.100
+  Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 448x768, q=2-31, 737 kb/s, 25 fps, 25 tbr, 12800 tbn (default)
+    Metadata:
+      handler_name    : VideoHandler
+      vendor_id       : [0][0][0][0]
+      encoder         : Lavc61.3.100 libx264
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 16000 Hz, mono, fltp, 69 kb/s
+    Metadata:
+      encoder         : Lavc60.31.102 aac
+size=       0kB time=-00:00:00.06 bitrate=  -0.0kbits/s speed=N/A    [out#0/mp4 @ 0x59d104662cc0] video:194kB audio:19kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 1.046273%
+size=     215kB time=00:00:02.20 bitrate= 801.8kbits/s speed= 195x    
+[aac @ 0x59d1045fa980] Qavg: 32987.184
+2026-07-03 22:28:07.084 | INFO     | __main__:generate:198 - Saving generated video to analysis_vram/res_vram_cpu_offload_probe.mp4.mp4
+2026-07-03 22:28:07.084 | INFO     | __main__:generate:199 - Finished.

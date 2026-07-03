@@ -139,6 +139,128 @@ duration 10.280000
 
 Note: the input female audio is 11.13 seconds, but this `once` mode output muxed to 10.28 seconds because fewer generated video frames were produced than with `stream` mode.
 
+### Audio Motion Scale Test
+
+To reduce overactive lips/teeth without changing the source audio, an inference-time `audio_motion_scale` knob was added.
+
+Implementation:
+
+- `flash_talk/configs/infer_params.yaml`
+- `flash_talk/inference.py`
+- `flash_talk/src/pipeline/flash_talk_pipeline.py`
+- `flash_talk/infinite_talk/modules/multitalk_model.py`
+
+The audio cross-attention residual is now scaled inside each attention block:
+
+```python
+x = x + x_a * getattr(self, 'audio_motion_scale', 1.0)
+```
+
+Current test value:
+
+```yaml
+audio_motion_scale: 0.65
+```
+
+Controlled test:
+
+- Same input image as `res_female_cpu_offload.mp4`
+- Same female voice sample
+- Same original prompt
+- Same `stream` audio mode
+- Same seed
+- Only changed `audio_motion_scale` from implicit `1.0` to `0.65`
+
+Output:
+
+| Output | Audio Motion Scale | Duration | Size | Approx Runtime |
+| --- | ---: | ---: | ---: | ---: |
+| `github_outputs/voice_tests/res_female_motion_scale_065.mp4` | 0.65 | 11.13 sec | 1.1M | 6 min 35 sec |
+
+Validation:
+
+```text
+github_outputs/voice_tests/res_female_motion_scale_065.mp4
+h264 video 448x768
+aac audio 24000 Hz mono
+duration 11.130000
+```
+
+Visual note: `audio_motion_scale: 0.65` did not dramatically reduce the over-visible teeth or large mouth shapes. It may be too mild, or the model may be encoding mouth openness through multiple pathways beyond the simple audio residual scale.
+
+## VRAM and Runtime Analysis
+
+A monitored CPU-offload probe was run with a short 2-second audio sample while sampling `nvidia-smi` once per second.
+
+Machine GPU:
+
+```text
+NVIDIA RTX PRO 5000 Blackwell
+Total VRAM: 48,935 MiB
+Idle VRAM: ~2 MiB
+```
+
+Observed VRAM during `--cpu_offload` generation:
+
+```text
+Peak VRAM used: 39,446 MiB
+Peak VRAM used: ~38.5 GiB
+Free VRAM at peak: 8,958 MiB
+```
+
+Practical conclusion:
+
+```text
+With --cpu_offload: budget about 39-40 GB VRAM.
+Without --cpu_offload: this 48 GB GPU is not enough.
+```
+
+The no-offload test failed during checkpoint loading, before generation:
+
+```text
+torch.OutOfMemoryError: CUDA out of memory.
+GPU 0 total capacity: 47.27 GiB
+Process memory in use at failure: 47.16 GiB
+Free memory at failure: ~103 MiB
+```
+
+### Long-Run Estimate
+
+The `audio_motion_scale: 0.65` test produced an 11.13-second video in about 6 minutes 35 seconds.
+
+That is approximately:
+
+```text
+395 sec generation / 11.13 sec video = ~35.5x realtime
+```
+
+At the current settings:
+
+```text
+audio_motion_scale: 0.65
+sample_steps: 4
+audio_encode_mode: stream
+--cpu_offload enabled
+448x768 output
+Blackwell SDPA fallback enabled
+```
+
+Estimated wall time for 450 minutes of finished video:
+
+```text
+450 minutes video * 35.5 = 15,975 minutes generation
+15,975 minutes = 266.25 hours
+266.25 hours = ~11.1 days
+```
+
+Practical estimate:
+
+```text
+450 minutes of output would take roughly 11 days on this machine.
+```
+
+This assumes continuous single-GPU generation, no failures, no batching overhead, and the same settings used for `github_outputs/voice_tests/res_female_motion_scale_065.mp4`.
+
 ### No CPU Offload Test
 
 A no-offload test was attempted with the female voice sample:

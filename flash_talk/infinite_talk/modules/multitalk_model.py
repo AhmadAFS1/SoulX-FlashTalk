@@ -293,7 +293,7 @@ class WanAttentionBlock(nn.Module):
         # cross attn of audio
         x_a = self.audio_cross_attn(self.norm_x(x), encoder_hidden_states=audio_embedding,
                                         shape=grid_sizes[0], x_ref_attn_map=x_ref_attn_map, human_num=human_num)
-        x = x + x_a
+        x = x + x_a * getattr(self, 'audio_motion_scale', 1.0)
 
         y = self.ffn((self.norm2(x).float() * (1 + e[4]) + e[3]).to(dtype))
         with amp.autocast(dtype=torch.float32):
