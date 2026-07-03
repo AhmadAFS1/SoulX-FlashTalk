@@ -111,6 +111,34 @@ aac audio 24000 Hz mono
 duration 11.120000
 ```
 
+### Subtle Prompt and Once Audio Encoding Test
+
+A controlled female voice comparison was run without changing the audio. The test used the same female voice sample and same selfie image as `res_female_cpu_offload.mp4`, but changed:
+
+- `--audio_encode_mode once`
+- prompt:
+
+```text
+A realistic close-up video of a person speaking calmly with subtle natural lip movement. Only small facial motions and gentle head movement occur. The background remains static.
+```
+
+Output:
+
+| Output | Audio Encoding | Prompt Style | Duration | Size | Approx Runtime |
+| --- | --- | --- | ---: | ---: | ---: |
+| `github_outputs/voice_tests/res_female_once_subtle_prompt.mp4` | `once` | Subtle/calm lip motion | 10.28 sec | 886K | 5 min 58 sec |
+
+Validation:
+
+```text
+github_outputs/voice_tests/res_female_once_subtle_prompt.mp4
+h264 video 448x768
+aac audio 24000 Hz mono
+duration 10.280000
+```
+
+Note: the input female audio is 11.13 seconds, but this `once` mode output muxed to 10.28 seconds because fewer generated video frames were produced than with `stream` mode.
+
 ### No CPU Offload Test
 
 A no-offload test was attempted with the female voice sample:
