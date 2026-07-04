@@ -2,6 +2,7 @@
 import math
 import os
 import types
+import gc
 from PIL import Image
 from loguru import logger
 import time
@@ -23,6 +24,22 @@ COMPILE_MODEL = True
 COMPILE_VAE = True
 # use parallel vae to speedup decode/encode
 USE_PARALLEL_VAE = True
+RELEASE_CONDITIONING_MODELS = os.environ.get("FLASHTALK_RELEASE_CONDITIONING_MODELS", "0") == "1"
+
+def torch_compile_supported(device):
+    if not torch.cuda.is_available():
+        return False
+    try:
+        major, minor = torch.cuda.get_device_capability(device)
+    except Exception:
+        return True
+    if major >= 12:
+        logger.warning(
+            f"Disabling torch.compile for CUDA capability {major}.{minor}; "
+            "the installed Triton toolchain does not support this target reliably."
+        )
+        return False
+    return True
 
 def to_param_dtype_fp32only(model, param_dtype):
     for module in model.modules():
@@ -54,6 +71,7 @@ class FlashTalkPipeline:
         device="cuda",
         use_usp=False,
         cpu_offload=False,
+        limited_cpu_offload=False,
         num_timesteps=1000,
         use_timestep_transform=True,
     ):
@@ -76,6 +94,7 @@ class FlashTalkPipeline:
         self.use_usp = use_usp and dist.is_initialized()
         self.param_dtype = config.param_dtype
         self.cpu_offload = cpu_offload and not self.use_usp
+        self.limited_cpu_offload = limited_cpu_offload and not self.cpu_offload and not self.use_usp
 
         self.text_encoder = T5EncoderModel(
             text_len=config.text_len,
@@ -136,15 +155,30 @@ class FlashTalkPipeline:
         self.num_timesteps = num_timesteps
         self.use_timestep_transform = use_timestep_transform
 
-        if COMPILE_MODEL and not self.cpu_offload:
+        compile_supported = torch_compile_supported(self.device)
+        if COMPILE_MODEL and not self.cpu_offload and compile_supported:
             self.model = torch.compile(self.model)
-        if COMPILE_VAE and not self.cpu_offload:
+        if COMPILE_VAE and not self.cpu_offload and not self.limited_cpu_offload and compile_supported:
             self.vae.encode = torch.compile(self.vae.encode)
             self.vae.decode = torch.compile(self.vae.decode)
 
         self.audio_encoder = Wav2Vec2Model.from_pretrained(wav2vec_dir, local_files_only=True).to(self.device)
         self.audio_encoder.feature_extractor._freeze_parameters()
         self.wav2vec_feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(wav2vec_dir, local_files_only=True)
+
+    def _move_vae(self, device):
+        self.vae.model.to(device)
+        self.vae.mean = self.vae.mean.to(device)
+        self.vae.inv_std = self.vae.inv_std.to(device)
+        self.vae.scale = [self.vae.mean, self.vae.inv_std]
+        self.vae.device = device
+
+    def _release_conditioning_models(self):
+        logger.info("Releasing text and CLIP encoders after conditioning prep.")
+        self.text_encoder = None
+        self.clip = None
+        gc.collect()
+        torch.cuda.empty_cache()
 
     @torch.no_grad()
     def prepare_params(self,
@@ -248,12 +282,21 @@ class FlashTalkPipeline:
         if self.cpu_offload:
             self.vae.model.cpu()
             torch.cuda.empty_cache()
+        elif self.limited_cpu_offload:
+            self._move_vae("cpu")
+            self._release_conditioning_models()
+        elif RELEASE_CONDITIONING_MODELS:
+            self._release_conditioning_models()
+            torch.cuda.empty_cache()
 
         return
 
     @torch.no_grad()
     def preprocess_audio(self, speech_array, sr=16000, fps=25):
         video_length = len(speech_array) * fps / sr
+
+        if self.limited_cpu_offload:
+            self.audio_encoder.to(self.device)
 
         # wav2vec_feature_extractor
         audio_feature = np.squeeze(
@@ -272,6 +315,11 @@ class FlashTalkPipeline:
 
         audio_emb = torch.stack(embeddings.hidden_states[1:], dim=1).squeeze(0)
         audio_emb = rearrange(audio_emb, "b s d -> s b d")
+
+        if self.limited_cpu_offload:
+            self.audio_encoder.cpu()
+            torch.cuda.empty_cache()
+
         return audio_emb
 
     @torch.no_grad()
@@ -326,7 +374,9 @@ class FlashTalkPipeline:
             if self.cpu_offload:
                 self.model.cpu()
                 torch.cuda.empty_cache()
-                self.vae.model.to(self.device)
+                self._move_vae(self.device)
+            elif self.limited_cpu_offload:
+                self._move_vae(self.device)
 
             torch.cuda.synchronize()
             start_decode_time = time.time()
@@ -355,8 +405,8 @@ class FlashTalkPipeline:
         if self.rank == 0:
             print(f'[generate] encode motion frames: {end_encode_time - start_encode_time}s')
 
-        if self.cpu_offload:
-            self.vae.model.cpu()
+        if self.cpu_offload or self.limited_cpu_offload:
+            self._move_vae("cpu")
             torch.cuda.empty_cache()
 
         gen_video_samples = videos #[:, :, self.motion_frames_num:]

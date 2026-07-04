@@ -71,6 +71,10 @@ def _parse_args():
         "--cpu_offload",
         action="store_true",
         help="Enable CPU offload for low VRAM usage")
+    parser.add_argument(
+        "--limited_cpu_offload",
+        action="store_true",
+        help="Keep the main diffusion model on GPU, but offload/release utility models between phases")
     args = parser.parse_args()
 
     _validate_args(args)
@@ -105,7 +109,16 @@ def generate(args):
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     rank = int(os.environ.get("RANK", 0))
 
-    pipeline = get_pipeline(world_size=world_size, ckpt_dir=args.ckpt_dir, wav2vec_dir=args.wav2vec_dir, cpu_offload=args.cpu_offload)
+    if args.cpu_offload and args.limited_cpu_offload:
+        raise ValueError("Use either --cpu_offload or --limited_cpu_offload, not both.")
+
+    pipeline = get_pipeline(
+        world_size=world_size,
+        ckpt_dir=args.ckpt_dir,
+        wav2vec_dir=args.wav2vec_dir,
+        cpu_offload=args.cpu_offload,
+        limited_cpu_offload=args.limited_cpu_offload,
+    )
     get_base_data(pipeline, input_prompt=args.input_prompt, cond_image=args.cond_image, base_seed=args.base_seed)
 
     generated_list = []

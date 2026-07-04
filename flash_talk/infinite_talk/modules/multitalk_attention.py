@@ -7,7 +7,12 @@ from xfuser.core.distributed import (
     get_sequence_parallel_rank,
     get_sequence_parallel_world_size,
 )
-import xformers.ops
+try:
+    import xformers.ops
+    XFORMERS_AVAILABLE = True
+except ModuleNotFoundError:
+    xformers = None
+    XFORMERS_AVAILABLE = False
 
 from ..utils.multitalk_utils import RotaryPositionalEmbedding1D, normalize_and_scale, split_token_counts_and_frame_ids
 
@@ -16,6 +21,8 @@ def _attention(q, k, v, attn_bias=None):
         x = F.scaled_dot_product_attention(
             q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2), attn_mask=None)
         return x.transpose(1, 2).contiguous()
+    if not XFORMERS_AVAILABLE:
+        raise RuntimeError("xformers is required for this attention path, but it is not installed.")
     return xformers.ops.memory_efficient_attention(q, k, v, attn_bias=attn_bias, op=None)
 
 class SingleStreamAttention(nn.Module):
@@ -84,6 +91,8 @@ class SingleStreamAttention(nn.Module):
         encoder_v = rearrange(encoder_v, "B H M K -> B M H K")
     
         if enable_sp:
+            if not XFORMERS_AVAILABLE:
+                raise RuntimeError("xformers is required for sequence-parallel attention bias, but it is not installed.")
             assert kv_seq is not None, f"kv_seq should not be None."
             # context parallel
             if visual_seqlen is None:
