@@ -152,6 +152,8 @@ Practical budget:
 
 When testing the GB10, run the same command with the same audio, image, prompt, seed, and config.
 
+Important setup difference: the GB10 machine tested for this comparison is `aarch64`, not the typical RTX PRO 5000 x86_64 environment. Some video/attention dependencies that install from wheels on the RTX PRO 5000 path may need source builds or special handling on GB10. See `docs/vast_provisioning.md` under "GB10 / aarch64 Install Differences" before assuming the normal provisioning script completed everything.
+
 ```bash
 CUDA_VISIBLE_DEVICES=0 .venv/bin/python generate_video.py \
   --ckpt_dir models/SoulX-FlashTalk-14B \
